@@ -1,23 +1,25 @@
-# Description
+# AppleTun
+
+## Description
 
 A utility for creating and connecting to a local VPN for ios devices allowing HTTP proxy without device supervision for all connections (not limited to Wi-Fi)
 
-# Installation
+## Installation
 
 ```shell
 python3 -m pip install -U AppleTun
 ```
 
-# Requirements
+## Requirements
 
 [StrongSwan](https://github.com/strongswan/strongswan) installation is required.
 Installation of StrongSwan can be done via `brew install strongswan`, any other package manager, or a manual build (incase special flags are required, exporting of session keys to files for example).
 
 Python requirements are stated in `requirements.txt`.
 
-# Usage
+## Usage
 
-```
+```none
 Usage: appletun [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -30,12 +32,12 @@ Commands:
   stop             Stop AppleTun VPN
 ```
 
-# Example
+## Example
 
 In this example, a VPN profile is installed with together with Proxyman certificate for use with the http proxy.
 After the installation the service is started and a connection to the VPN is established.
 
-```
+```shell
 ➜  appletun git:(master) ✗ appletun install-profile -C proxyman-ca.pem
 Profile installed, please accept installation on device
 Please allow installed certificate under Settings > General > About > Certificate Trust Settings
@@ -46,7 +48,8 @@ VPN Running
 ```
 
 The generated `ipsec.conf` configuration would look as follows:
-```
+
+```conf
 conn AppleTun
   left=0.0.0.0                  # Server listens on any IPv4 address
   leftid=AppleTun               # Identity presented by the server
@@ -67,6 +70,7 @@ conn AppleTun
 ```
 
 While the following line would be added to `ipsec.secrets`:
-```
+
+```none
 AppleTun : PSK "************"
 ```
