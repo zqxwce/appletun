@@ -55,6 +55,7 @@ After the installation the service is started and a connection to the VPN is est
     ➜  appletun git:(master) ✗ appletun start
     installed profile: AppleTunVPN PSK ************ HTTP 192.168.1.2:9090
     VPN Running
+    Please activate VPN connection on Client device
     ```
 
 5. Connect to the VPN from the device.

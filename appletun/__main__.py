@@ -198,6 +198,7 @@ def start(service_provider:   LockdownServiceProvider):
 
     local["ipsec"]("restart")
     print("VPN Running")
+    print("Please activate VPN connection on Client device")
 
 @cli.command()
 def stop():
