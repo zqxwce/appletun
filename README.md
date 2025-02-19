@@ -37,15 +37,28 @@ Commands:
 In this example, a VPN profile is installed with together with Proxyman certificate for use with the http proxy.
 After the installation the service is started and a connection to the VPN is established.
 
-```shell
-➜  appletun git:(master) ✗ appletun install-profile -C proxyman-ca.pem
-Profile installed, please accept installation on device
-Please allow installed certificate under Settings > General > About > Certificate Trust Settings
+1. Install a profile with Proxyman certificate:
 
-➜  appletun git:(master) ✗ appletun start
-installed profile: AppleTunVPN PSK ************ HTTP 192.168.1.2:9090
-VPN Running
-```
+    ```shell
+    ➜  appletun git:(master) ✗ appletun install-profile -C proxyman-ca.pem
+    Profile installed, please accept installation on device
+    Please allow installed certificate under Settings > General > About > Certificate Trust Settings
+    ```
+
+2. Accept the new profile on the iOS device.
+
+3. Allow the installed certificate under `Settings > General > About > Certificate Trust Settings`
+
+4. Start the VPN server:
+
+    ```shell
+    ➜  appletun git:(master) ✗ appletun start
+    installed profile: AppleTunVPN PSK ************ HTTP 192.168.1.2:9090
+    VPN Running
+    ```
+
+5. Connect to the VPN from the device.
+
 
 The generated `ipsec.conf` configuration would look as follows:
 
