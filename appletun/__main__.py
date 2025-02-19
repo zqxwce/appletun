@@ -176,7 +176,7 @@ def generate_and_install_profile(service: MobileConfigService,
     if psk is None:
         vpn_secrets = get_vpn_secret(config, vpn_name)
         if len(vpn_secrets) == 0:
-            characters = string.ascii_letters + string.digits + string.punctuation
+            characters = string.ascii_letters + string.digits
             psk = ''.join(secrets.choice(characters) for _ in range(12))
         else:
             psk = vpn_secrets[0]
