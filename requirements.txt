@@ -1,4 +1,4 @@
 pymobiledevice3>=4.10.0
-maclog
+click
 plumbum
 psutil
