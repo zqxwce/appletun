@@ -24,9 +24,6 @@ classifiers = [
 ]
 dynamic = ["dependencies", "version"]
 
-[project.optional-dependencies]
-test = ["pytest", "cmd2_ext_test"]
-
 [project.urls]
 "Homepage" = "https://github.com/zqxwce/appletun"
 "Bug Reports" = "https://github.com/zqxwce/appletun/issues"

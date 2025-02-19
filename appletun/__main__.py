@@ -1,16 +1,16 @@
-from pathlib import Path
 import plistlib
 import re
 import secrets
 import string
+from pathlib import Path
 from sys import platform
-from typing import IO, Optional, Any, Union
+from typing import Any, IO, Optional, Union
 
 import click
-from plumbum.commands.base import BoundCommand
-from plumbum.machines.local import LocalCommand
 import psutil
 from plumbum import local
+from plumbum.commands.base import BoundCommand
+from plumbum.machines.local import LocalCommand
 from pymobiledevice3.cli.cli_common import Command
 from pymobiledevice3.lockdown import LockdownServiceProvider
 from pymobiledevice3.services.mobile_config import MobileConfigService
@@ -100,8 +100,7 @@ def write_vpn_secret(config: Path,
                      server_id: str,
                      psk: str) -> None:
     """ Write a new PSK secret to ipsec.secrets if not already exists"""
-    existing: list[str] = get_vpn_secret(config, server_id)
-    if psk not in existing:
+    if psk not in get_vpn_secret(config, server_id):
         secrets_file: Path = config / 'ipsec.secrets'
         with secrets_file.open('a') as f:
             f.write(f'{server_id} : PSK "{psk}"')
