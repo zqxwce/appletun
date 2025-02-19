@@ -2,13 +2,14 @@
 
 ## Description
 
-A utility for creating and connecting to a local VPN for iOS devices allowing HTTP proxy without device supervision for all connections (not limited to Wi-Fi)
-
+A utility for creating and connecting to a local VPN for iOS devices allowing HTTP proxy without device supervision
+for all connections (not limited to Wi-Fi)
 
 ## Requirements
 
 [StrongSwan](https://github.com/strongswan/strongswan) installation is required.
-Installation of StrongSwan can be done via `brew install strongswan`, any other package manager, or a manual build (incase special flags are required, exporting of session keys to files for example).
+Installation of StrongSwan can be done via `brew install strongswan`, any other package manager,
+or a manual build (incase special flags are required, exporting of session keys to files for example).
 
 ## Installation
 
