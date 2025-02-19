@@ -196,14 +196,14 @@ def start(service_provider:   LockdownServiceProvider):
     else:
         print("Warning: generated AppleTun profile not found")
 
-    local["ipsec"]("restart")
+    local["sudo"]("ipsec", "restart")
     print("VPN Running")
     print("Please activate VPN connection on Client device")
 
 @cli.command()
 def stop():
     """ Stop AppleTun VPN """
-    local["ipsec"]("stop")
+    local["sudo"]("ipsec", "stop")
 
 @cli.command(cls=Command)
 @click.option('-s', '--server-address', show_default='First non-loopback ipv4 address assigned to this machine', help='Address of the server for the client to connect to')
