@@ -1,0 +1,4 @@
+pymobiledevice3>=4.10.0
+click
+plumbum
+psutil
