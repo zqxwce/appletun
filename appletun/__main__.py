@@ -4,9 +4,11 @@ import re
 import secrets
 import string
 from sys import platform
-from typing import IO, Optional, Any
+from typing import IO, Optional, Any, Union
 
 import click
+from plumbum.commands.base import BoundCommand
+from plumbum.machines.local import LocalCommand
 import psutil
 from plumbum import local
 from pymobiledevice3.cli.cli_common import Command
@@ -34,6 +36,8 @@ conn {vpn_name}
 """
 
 PROFILE_UUID = 'B6CFC043-A872-4EE1-BADF-53471B910BA7'
+
+ipsec: Union[LocalCommand, BoundCommand] = local['sudo']['ipsec']
 
 
 def get_machine_ips(ipv4: bool = True,
@@ -77,9 +81,9 @@ def write_new_vpn_config(config: Path,
     """ Create a new config for a VPN and write it to ipsec.config if no config with the same name exists """
     ipsec_conf_file: Path = config / 'ipsec.conf'
     if not check_vpn_config_exist(config, vpn_name):
-        config = BASE_VPN_CONFIG_FORMAT.format(vpn_name=vpn_name)
+        raw_config = BASE_VPN_CONFIG_FORMAT.format(vpn_name=vpn_name)
         with ipsec_conf_file.open('a') as f:
-            f.write(config)
+            f.write(raw_config)
 
 
 def get_vpn_secret(config: Path,
@@ -204,7 +208,7 @@ def start(service_provider: LockdownServiceProvider) -> None:
     else:
         print('Warning: generated AppleTun profile not found')
 
-    local['sudo']('ipsec', 'restart')
+    ipsec('restart')
     print('VPN Running')
     print('Please activate VPN connection on Client device')
 
@@ -212,7 +216,7 @@ def start(service_provider: LockdownServiceProvider) -> None:
 @cli.command()
 def stop() -> None:
     """ Stop AppleTun VPN """
-    local['sudo']('ipsec', 'stop')
+    ipsec('stop')
 
 
 @cli.command(cls=Command)
