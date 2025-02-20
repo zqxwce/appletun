@@ -103,7 +103,7 @@ def write_vpn_secret(config: Path,
     if psk not in get_vpn_secret(config, server_id):
         secrets_file: Path = config / 'ipsec.secrets'
         with secrets_file.open('a') as f:
-            f.write(f'{server_id} : PSK "{psk}"')
+            f.write(f'\n{server_id} : PSK "{psk}"')
 
 
 def generate_profile(server_address: str,
