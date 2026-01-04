@@ -1,4 +1,4 @@
-pymobiledevice3>=4.10.0
+pymobiledevice3>=7.0.7
 click
 plumbum
 psutil
