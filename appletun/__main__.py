@@ -4,16 +4,16 @@ import secrets
 import string
 from pathlib import Path
 from sys import platform
-from typing import Any, IO, Optional, Union
+from typing import Any, Optional, Union
 
 import click
 import psutil
 from plumbum import local
 from plumbum.commands.base import BoundCommand
 from plumbum.machines.local import LocalCommand
-from pymobiledevice3.cli.cli_common import Command
-from pymobiledevice3.lockdown import LockdownServiceProvider
+from pymobiledevice3.cli.cli_common import ServiceProviderDep
 from pymobiledevice3.services.mobile_config import MobileConfigService
+from typer_injector import InjectingTyper
 
 BASE_VPN_CONFIG_FORMAT = """
 conn {vpn_name}
@@ -191,13 +191,15 @@ def generate_and_install_profile(service: MobileConfigService,
         write_vpn_secret(config, vpn_name, psk)
 
 
-@click.group()
-def cli():
-    pass
+cli = InjectingTyper(
+    no_args_is_help=True,
+    help="Create and connect to a local VPN for iOS devices allowing HTTP proxy without device supervision for all "
+         "connections (not limited to Wi-Fi)"
+)
 
 
-@cli.command(cls=Command)
-def start(service_provider: LockdownServiceProvider) -> None:
+@cli.command()
+def start(service_provider: ServiceProviderDep) -> None:
     """ Start AppleTun VPN """
     service = MobileConfigService(lockdown=service_provider)
     profiles = service.get_profile_list()
@@ -218,7 +220,7 @@ def stop() -> None:
     ipsec('stop')
 
 
-@cli.command(cls=Command)
+@cli.command()
 @click.option('-s', '--server-address',
               show_default='First non-loopback ipv4 address assigned to this machine',
               help='Address of the server for the client to connect to')
@@ -230,25 +232,25 @@ def stop() -> None:
               help='Address of http proxy')
 @click.option('-P', '--http-proxy-port', type=click.IntRange(0x0000, 0xffff), default=9090,
               show_default=True, help='Port for http proxy')
-@click.option('-C', '--http_proxy-cert', type=click.File('rb'), default=None,
+@click.option('-C', '--http_proxy-cert', type=click.Path(file_okay=True, dir_okay=False, exists=True), default=None,
               show_default="No certificate would be installed",
               help='Certificate for the http proxy to install with the profile')
 @click.option('--no-write-config', is_flag=True,
               help='Disable writing of the VPN configuration to ipsec.config/ipsec.secrets')
-def install_profile(service_provider: LockdownServiceProvider,
+def install_profile(service_provider: ServiceProviderDep,
                     server_address: Optional[str],
                     vpn_name: str,
                     psk: Optional[str],
                     http_proxy_port: int,
                     http_proxy_addr: Optional[str],
-                    http_proxy_cert: Optional[IO],
+                    http_proxy_cert: Optional[str],
                     no_write_config: bool) -> None:
     """ Install AppleTun VPN profile (override if already exists) """
     service = MobileConfigService(lockdown=service_provider)
     service.remove_profile(PROFILE_UUID)
     raw_cert = None
     if http_proxy_cert is not None:
-        raw_cert = http_proxy_cert.read()
+        raw_cert = Path(http_proxy_cert).read_bytes()
     generate_and_install_profile(service, server_address, vpn_name, psk, http_proxy_port, http_proxy_addr, raw_cert,
                                  no_write_config)
     print('Profile installed, please accept installation on device')
@@ -256,8 +258,8 @@ def install_profile(service_provider: LockdownServiceProvider,
         print('Please allow installed certificate under Settings > General > About > Certificate Trust Settings')
 
 
-@cli.command(cls=Command)
-def remove_profile(service_provider: LockdownServiceProvider) -> None:
+@cli.command()
+def remove_profile(service_provider: ServiceProviderDep) -> None:
     """ Remove AppleTun VPN profile """
     service = MobileConfigService(lockdown=service_provider)
     service.remove_profile(PROFILE_UUID)
