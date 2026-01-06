@@ -4,15 +4,15 @@ import secrets
 import string
 from pathlib import Path
 from sys import platform
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Annotated
 
-import click
 import psutil
 from plumbum import local
 from plumbum.commands.base import BoundCommand
 from plumbum.machines.local import LocalCommand
 from pymobiledevice3.cli.cli_common import ServiceProviderDep
 from pymobiledevice3.services.mobile_config import MobileConfigService
+import typer
 from typer_injector import InjectingTyper
 
 BASE_VPN_CONFIG_FORMAT = """
@@ -221,38 +221,81 @@ def stop() -> None:
 
 
 @cli.command()
-@click.option('-s', '--server-address',
-              show_default='First non-loopback ipv4 address assigned to this machine',
-              help='Address of the server for the client to connect to')
-@click.option('-n', '--vpn-name', default="AppleTun", show_default=True, help='Name to assign the VPN')
-@click.option('-p', '--psk',
-              show_default='If one already exist for the same vpn name, use it, otherwise generated random PSK',
-              help='PSK for the authentication with the VPN')
-@click.option('-H', '--http_proxy-addr', show_default="Same as server address",
-              help='Address of http proxy')
-@click.option('-P', '--http-proxy-port', type=click.IntRange(0x0000, 0xffff), default=9090,
-              show_default=True, help='Port for http proxy')
-@click.option('-C', '--http_proxy-cert', type=click.Path(file_okay=True, dir_okay=False, exists=True), default=None,
-              show_default="No certificate would be installed",
-              help='Certificate for the http proxy to install with the profile')
-@click.option('--no-write-config', is_flag=True,
-              help='Disable writing of the VPN configuration to ipsec.config/ipsec.secrets')
-def install_profile(service_provider: ServiceProviderDep,
-                    server_address: Optional[str],
-                    vpn_name: str,
-                    psk: Optional[str],
-                    http_proxy_port: int,
-                    http_proxy_addr: Optional[str],
-                    http_proxy_cert: Optional[str],
-                    no_write_config: bool) -> None:
+def install_profile(
+    service_provider: ServiceProviderDep,
+    server_address: Annotated[
+        Optional[str],
+        typer.Option(
+            '-s',
+            '--server-address',
+            show_default='First non-loopback ipv4 address assigned to this machine',
+            help='Address of the server for the client to connect to'
+        )] = None,
+    vpn_name: Annotated[
+        str,
+        typer.Option(
+            '-n',
+            '--vpn-name',
+            show_default=True,
+            help='Name to assign the VPN'
+        )] = "AppleTun",
+    psk: Annotated[
+        Optional[str],
+        typer.Option(
+            '-p',
+            '--psk',
+            show_default='If one already exist for the same vpn name, use it, otherwise generated random PSK',
+            help='PSK for the authentication with the VPN'
+        )] = None,
+    http_proxy_addr: Annotated[
+        Optional[str],
+        typer.Option(
+            '-H',
+            '--http-proxy-addr',
+            show_default="Same as server address",
+            help='Address of http proxy'
+        )] = None,
+    http_proxy_port: Annotated[
+        int,
+        typer.Option(
+            '-P',
+            '--http-proxy-port',
+            min=0x0000,
+            max=0xffff,
+            show_default=True,
+            help='Port for http proxy'
+        )] = 9090,
+    http_proxy_cert: Annotated[
+        Optional[Path],
+        typer.Option(
+            '-C',
+            '--http-proxy-cert',
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            show_default="No certificate would be installed",
+            help='Certificate for the http proxy to install with the profile'
+        )] = None,
+    no_write_config: Annotated[
+        bool,
+        typer.Option(
+            '--no-write-config',
+            help='Disable writing of the VPN configuration to ipsec.config/ipsec.secrets'
+        )] = False) -> None:
     """ Install AppleTun VPN profile (override if already exists) """
     service = MobileConfigService(lockdown=service_provider)
     service.remove_profile(PROFILE_UUID)
-    raw_cert = None
-    if http_proxy_cert is not None:
-        raw_cert = Path(http_proxy_cert).read_bytes()
-    generate_and_install_profile(service, server_address, vpn_name, psk, http_proxy_port, http_proxy_addr, raw_cert,
-                                 no_write_config)
+    raw_cert = http_proxy_cert.read_bytes() if http_proxy_cert is not None else None
+    generate_and_install_profile(
+        service,
+        server_address,
+        vpn_name,
+        psk,
+        http_proxy_port,
+        http_proxy_addr,
+        raw_cert,
+        no_write_config
+    )
     print('Profile installed, please accept installation on device')
     if http_proxy_cert is not None:
         print('Please allow installed certificate under Settings > General > About > Certificate Trust Settings')
